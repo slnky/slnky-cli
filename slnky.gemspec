@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Shawn Catanzarite"]
   spec.email         = ["me@shawncatz.com"]
 
-  spec.summary       = %q{core slnky lib}
-  spec.description   = %q{core slnky lib}
-  spec.homepage      = "https://github.com/shawncatz/slnky"
+  spec.summary       = %q{core slnky lib and command line}
+  spec.description   = %q{core slnky lib and command line}
+  spec.homepage      = "https://github.com/slnky/slnky-cli"
   spec.license       = "MIT"
 
   # # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
