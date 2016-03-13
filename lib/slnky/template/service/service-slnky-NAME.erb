@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'dotenv'
+require 'daemons'
+require 'slnky/service/<%= name %>'
+Dotenv.load
+
+env = ARGV[1]
+
+# Become a daemon
+Daemons.daemonize if env == 'production'
+
+Slnky::Service::<%= name.capitalize %>.new(ENV['SLNKY_URL'], env: env).start

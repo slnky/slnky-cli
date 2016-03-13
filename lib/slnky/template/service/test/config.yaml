@@ -1,0 +1,7 @@
+---
+# config.yaml for Slnky::Service::Test
+# this file is processed through ERB, you can inject
+# values into the config from the environment, by specifying them
+# in the .env file
+environment: development # should specify this
+service: test # just an example

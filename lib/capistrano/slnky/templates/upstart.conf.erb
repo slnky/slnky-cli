@@ -1,0 +1,17 @@
+start on started networking
+respawn
+respawn limit 15 5
+
+env SLNKY_SERVICE="<%= fetch(:application) %>"
+export SLNKY_SERVICE
+env SLNKY_DIR="<%= current_path %>"
+export SLNKY_DIR
+env SLNKY_RVM="<%= fetch(:rvm_ruby_version) %>"
+export SLNKY_RVM
+env SLNKY_SCRIPT="service-<%= fetch(:application) %>"
+export SLNKY_SCRIPT
+
+exec start-stop-daemon --start \
+    --chdir ${SLNKY_DIR} \
+    --make-pidfile --pidfile ${SLNKY_DIR}/tmp/pids/${SLNKY_SERVICE}.pid \
+    --exec /usr/local/rvm/bin/rvm -- ${SLNKY_RVM} do bundle exec ./${SLNKY_SCRIPT} production
