@@ -10,11 +10,11 @@ module Slnky
         options = {
             durable: true
         }.merge(overrides)
-        @queues[name] = @channel.queue("service.#{@name}.events", options).bind(exchange)
+        @queues[name] = @channel.queue("service.#{name}.events", options).bind(exchange)
       end
 
       def [](name)
-        @queues["service.#{@name}.events"] || @queues[name] || raise("no queue found: #{name}")
+        @queues["service.#{name}.events"] || @queues[name] || raise("no queue found: #{name}")
       end
 
       def each
