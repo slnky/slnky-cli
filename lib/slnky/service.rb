@@ -41,6 +41,14 @@ module Slnky
           @queues = Slnky::Service::Queues.new(@channel)
           @queues.create(@name, @exchanges['events'])
 
+          stopper = Proc.new do
+            puts "#{Time.now}: stopping"
+            connection.close { EventMachine.stop }
+          end
+
+          Signal.trap("INT", stopper)
+          Signal.trap("TERM", stopper)
+
           log :info, "running"
 
           run
@@ -56,6 +64,11 @@ module Slnky
             @subscriptions.for(event) do |name, method|
               self.send(method.to_sym, event, data)
             end
+            if event == 'slnky.service.restart'
+              # if we get this event, just stop. upstart will start us again.
+              log :warn, "recieved restart event"
+              stopper.call
+            end
           end
 
           @periodics.each do |seconds, method|
@@ -63,15 +76,6 @@ module Slnky
               self.send(method.to_sym)
             end
           end
-
-          stopper = Proc.new do
-            puts 'stopping'
-            # TODO: log :warn, "slnky.service.#{@name}: stopping"
-            connection.close { EventMachine.stop }
-          end
-
-          Signal.trap("INT", stopper)
-          Signal.trap("TERM", stopper)
         end
       end
 
