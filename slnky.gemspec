@@ -36,4 +36,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'thor', '~> 0.19.1'
   spec.add_dependency 'activesupport', '~> 4.2.5.1'
   spec.add_dependency 'tilt', '~> 2.0.2'
+  spec.add_dependency 'eventmachine', '~> 1.0.9.1'
 end
