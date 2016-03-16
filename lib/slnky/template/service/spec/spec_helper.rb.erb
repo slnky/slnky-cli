@@ -20,9 +20,8 @@ end
 def test_config
   @config ||= begin
     file = File.expand_path("../../test/config.yaml", __FILE__)
-    template = Tilt.new(file)
+    template = Tilt::ERBTemplate.new(file)
     output = template.render(self, @dotenv)
     YAML.load(output)
   end
 end
-
