@@ -66,7 +66,7 @@ module Slnky
             end
             if event == 'slnky.service.restart'
               # if we get this event, just stop. upstart will start us again.
-              log :warn, "recieved restart event"
+              log :warn, "received restart event"
               stopper.call
             end
           end
