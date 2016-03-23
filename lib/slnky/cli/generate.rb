@@ -4,7 +4,7 @@ module Slnky
       subcommand 'service', 'generate a service named NAME' do
         parameter 'NAME', 'the name of the service'
         def execute
-          generator = Slnky::Generator::Service.new(name, dir)
+          generator = Slnky::Generator::Service.new(name)
           generator.generate
         end
       end

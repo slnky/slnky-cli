@@ -8,9 +8,9 @@ module Slnky
       attr_reader :name
       attr_reader :dir
 
-      def initialize(name, dir)
+      def initialize(name)
         @name = name
-        @dir = File.expand_path(dir == nil ? "slnky-#{name}" : dir)
+        @dir = File.expand_path("slnky-#{name}")
         short = self.class.name.split('::').last.downcase
         @template = File.expand_path("../template/#{short}", __FILE__)
       end
