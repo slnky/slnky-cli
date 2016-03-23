@@ -4,4 +4,4 @@ require 'rubygems'
 require 'bundler/setup'
 require 'slnky/cli'
 
-Slnky::CLI::Main.start(ARGV)
+Slnky::CLI::Main.run

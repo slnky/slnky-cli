@@ -1,17 +1,21 @@
 module Slnky
   module CLI
-    class Generate < Thor
-      desc 'service NAME [DIR]', 'generate a service named NAME'
-      def service(name, dir=nil)
-        generator = Slnky::Generator::Service.new(name, dir)
-        generator.generate
+    class Generate < Base
+      subcommand 'service', 'generate a service named NAME' do
+        parameter 'NAME', 'the name of the service'
+        def execute
+          generator = Slnky::Generator::Service.new(name, dir)
+          generator.generate
+        end
       end
 
-      desc 'command NAME [DIR]', 'generate a service named NAME'
-      def command(name, dir=nil)
-        raise Thor::Error, "not implemented"
-        # Slnky::Generator::Command.new(name, dir).generate
+      subcommand 'command', 'generate a command named NAME' do
+        parameter 'NAME', 'the name of the command'
+        def execute
+          raise 'not implemented'
+        end
       end
     end
   end
 end
+Slnky::CLI::Main.subcommand 'generate', 'generate from templates', Slnky::CLI::Generate
