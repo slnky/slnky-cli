@@ -7,6 +7,7 @@ namespace :load do
     set :slnky_service, -> { "#{fetch(:application)}-#{fetch(:stage)}" }
     set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids')
     set :linked_files, fetch(:linked_files, []).push('.env')
+    set :templates_path, 'config/templates'
   end
 end
 
