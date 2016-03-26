@@ -5,6 +5,7 @@ require 'slnky/service'
 require 'slnky/generator'
 
 require 'rest_client'
+require 'active_support/all'
 
 module Slnky
   class << self
