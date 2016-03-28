@@ -12,6 +12,10 @@ namespace :load do
 end
 
 namespace :slnky do
+  task :mkdir do
+    execute :mkdir, '-pv', shared_path
+  end
+
   desc 'upload upstart config'
   task :upstart do
     on roles :app do
@@ -31,11 +35,13 @@ end
 
 desc 'setup task'
 task :setup do
+  invoke 'slnky:mkdir'
   invoke 'slnky:upstart'
 end
 
 namespace :deploy do
   after :publishing, 'slnky:restart'
+  after :setup, 'deploy:dotenv'
 
   desc "push deploy.env to service's shared_path on the server"
   task :dotenv do
