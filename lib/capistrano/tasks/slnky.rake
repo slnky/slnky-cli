@@ -13,7 +13,9 @@ end
 
 namespace :slnky do
   task :mkdir do
-    execute :mkdir, '-pv', shared_path
+    on roles :app do
+      execute :mkdir, '-pv', shared_path
+    end
   end
 
   desc 'upload upstart config'
