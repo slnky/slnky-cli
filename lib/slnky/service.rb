@@ -17,7 +17,7 @@ module Slnky
 
       def initialize(url, options={})
         @server = url
-        @name = self.class.name.split('::').last.downcase
+        @name = self.class.name.split('::')[1].downcase
         # @environment = options.delete(:env) || options.delete(:environment) || 'development'
         @config = load_config(options)
 
@@ -68,6 +68,8 @@ module Slnky
               # if we get this event, just stop. upstart will start us again.
               log :warn, "received restart event"
               stopper.call
+            elsif event == "slnky.#{@name}.command"
+              handle_command(event, data)
             end
           end
 
@@ -77,6 +79,20 @@ module Slnky
             end
           end
         end
+      end
+
+      def handle_command(name, data)
+        req = Slnky::Command::Request.new(data)
+        res = Slnky::Command::Response.new(output: nil)
+        begin
+          k = "Slnky::#{@name.capitalize}::Command".constantize
+          k.new(config)
+          k.send(req.command, req, res)
+          puts res.output
+        rescue => e
+          log :error, "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"
+        end
+        res
       end
 
       protected
