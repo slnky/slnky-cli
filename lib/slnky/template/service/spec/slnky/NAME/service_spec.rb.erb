@@ -1,0 +1,14 @@
+require 'spec_helper'
+
+describe Slnky::<%= cap %>::Service do
+  subject do
+    s = described_class.new("http://localhost:3000", test_config)
+    s.client = Slnky::<%= cap %>::Mock.new(test_config)
+    s
+  end
+  let(:test_event) { event_load('test')}
+
+  it 'handles event' do
+    expect(subject.handler(test_event.name, test_event.payload)).to eq(true)
+  end
+end

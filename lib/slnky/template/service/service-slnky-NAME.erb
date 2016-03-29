@@ -7,7 +7,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'dotenv'
 require 'daemons'
-require 'slnky/service/<%= name %>'
+require 'slnky/<%= name %>'
 Dotenv.load
 
 env = ARGV[0]
@@ -15,4 +15,4 @@ env = ARGV[0]
 # Become a daemon
 # Daemons.daemonize if env == 'production'
 
-Slnky::Service::<%= name.capitalize %>.new(ENV['SLNKY_URL'], env: env).start
+Slnky::<%= cap %>::Service.new(ENV['SLNKY_URL'], environment: env).start

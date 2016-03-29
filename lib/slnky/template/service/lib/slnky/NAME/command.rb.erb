@@ -1,0 +1,16 @@
+module Slnky
+  module <%= cap %>
+    class Command < Slnky::Command::Base
+      attr_writer :client
+      def client
+        @client ||= Slnky::<%= cap %>::Client.new(config)
+      end
+
+      def echo(request, response)
+        # pong
+        args = request.arguments
+        response.output = args.join(" ")
+      end
+    end
+  end
+end

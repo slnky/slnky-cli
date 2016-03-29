@@ -2,6 +2,7 @@ require 'slnky/version'
 require 'slnky/data'
 require 'slnky/message'
 require 'slnky/service'
+require 'slnky/command'
 require 'slnky/generator'
 
 require 'rest_client'

@@ -1,8 +1,11 @@
-require 'slnky'
-
 module Slnky
-  module Service
-    class <%= name.capitalize %> < Base
+  module <%= cap %>
+    class Service < Slnky::Service::Base
+      attr_writer :client
+      def client
+        @client ||= Slnky::<%= cap %>::Client.new(config)
+      end
+
       subscribe 'slnky.service.test', :handler
       # you can also subscribe to heirarchies, this gets
       # all events under something.happened

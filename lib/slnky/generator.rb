@@ -10,7 +10,8 @@ module Slnky
 
       def initialize(name)
         @name = name
-        @dir = File.expand_path("slnky-#{name}")
+        @service = "slnky-#{name}"
+        @dir = File.expand_path("./#{@service}")
         short = self.class.name.split('::').last.downcase
         @template = File.expand_path("../template/#{short}", __FILE__)
       end
@@ -33,13 +34,13 @@ module Slnky
       def process_files
         Find.find(@template).each do |path|
           next unless File.file?(path)
-          file = path.gsub(/^#{@template}\//, '')
+          file = path.gsub(/^#{@template}\//, '').gsub('NAME', @name)
           ext = File.extname(path)
           mkdir(File.dirname("#{@dir}/#{file}"))
           if ext == '.erb'
-            tmpl(file)
+            tmpl(path, file)
           else
-            file(file)
+            file(path, file)
           end
         end
       end
@@ -50,19 +51,20 @@ module Slnky
         FileUtils.mkdir_p(dir)
       end
 
-      def file(file)
+      def file(path, file)
         # puts "file:  #{file}"
-        FileUtils.cp("#{@template}/#{file}", "#{@dir}/#{file}")
+        FileUtils.cp(path, "#{@dir}/#{file}")
       end
 
-      def tmpl(file)
+      def tmpl(path, file)
         # puts "tmpl:  #{file}"
-        path = "#{@template}/#{file}"
         var = {
             name: @name,
-            dir: @dir
+            dir: @dir,
+            cap: @name.capitalize,
+            service: @service
         }
-        out = file.gsub(/\.erb$/, '').gsub('NAME', @name)
+        out = file.gsub(/\.erb$/, '')
         dest = "#{@dir}/#{out}"
         # puts "       #{dest}"
         template = Tilt.new(path)
