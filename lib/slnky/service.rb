@@ -26,7 +26,7 @@ module Slnky
         @hostname = Socket.gethostname
         @ipaddress = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address
 
-        @command = "Slnky::#{@name.capitalize}::Command".constantize.new(config)
+        @command = "Slnky::#{@name.capitalize}::Command".constantize.new(config) rescue nil
       end
 
       def start
@@ -96,6 +96,7 @@ module Slnky
       def handle_command(name, data)
         req = Slnky::Command::Request.new(data)
         res = Slnky::Command::Response.new(@channel, @exchanges['response'], data.response, "#{@ipaddress}/#{@name}-#{$$}")
+        return res.output "no command support for #{@name}" unless @command
         begin
           @command.handle(req, res)
         rescue => e
