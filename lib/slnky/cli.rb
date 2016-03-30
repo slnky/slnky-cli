@@ -2,6 +2,7 @@ require 'slnky'
 require 'yaml'
 require 'clamp'
 require 'active_support/all'
+require 'highline'
 
 module Slnky
   module CLI

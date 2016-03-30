@@ -39,4 +39,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'eventmachine', '~> 1.0.9.1'
   spec.add_dependency 'rest-client', '~> 1.8.0'
   spec.add_dependency 'slop', '~> 4.3.0'
+  spec.add_dependency 'highline', '~> 1.7.8'
 end
