@@ -18,7 +18,7 @@ module Slnky
       def initialize(url, options={})
         @server = url
         @name = self.class.name.split('::')[1].downcase
-        # @environment = options.delete(:env) || options.delete(:environment) || 'development'
+        @environment = options.delete(:environment) || 'development'
         @config = load_config(options)
 
         @subscriptions = self.class.subscriptions || Slnky::Service::Subscriptions.new
