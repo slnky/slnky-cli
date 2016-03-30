@@ -3,63 +3,70 @@ module Slnky
     class Command < Base
       # option %w{-s --server}, '[SERVER]', 'set server url', environment_variable: 'SLNKY_SERVER'
       option %w{-n --dry-run}, :flag, "just output the event, don't send"
-      parameter 'CMD', 'the name of the command'
-      parameter 'SCMD', 'the name of the subcommand'
-      parameter '[ATTRIBUTES] ...', <<-DESC.strip_heredoc, attribute_name: :args
-        key=value pairs to add to the event, merged with optional file
-        supports dotted notation keys, and will merge them into nested hash
-        chat.* keys are specially handled, they are not encoded as part of the
-        attributes, they will be moved to their own keyspace
+      option %w{-t --timeout}, '[TIMEOUT]', "just output the event, don't send", default: 10 do |t|
+        Integer(t)
+      end
+      parameter 'SERVICE', 'the name of the service'
+      parameter 'COMMAND', 'the name of the command'
+      parameter '[ARGUMENTS] ...', <<-DESC.strip_heredoc, attribute_name: :args
+        arguments to the command
+        commands support options and command line arguments similarly to
+        standard option parsing.
       DESC
+
       def execute
-        # attributes = {}
-        # if file
-        #   begin
-        #     yaml = YAML.load_file(file)
-        #     attributes.merge!(yaml)
-        #   rescue => e
-        #     puts "ERROR: reading file #{file}"
-        #     exit(1)
-        #   end
-        # end
-        # attributes.merge!(dothash(kvs)) if kvs
-        # chat = attributes.delete(:chat)
-        msg = Slnky::Message.new({name: "slnky.#{cmd}.command", command: scmd, args: args})
-        cfg = Slnky.config
-        srv = server || cfg['slnky']['url']
-
-        puts 'sending message:'
-        puts JSON.pretty_generate(msg.to_h)
-        Slnky.notify(msg, srv) unless dry_run?
+        data = {
+            name: "slnky.#{service}.command",
+            command: command,
+            args: args,
+            response: "command-#{$$}",
+        }
+        msg = Slnky::Message.new(data)
+        puts JSON.pretty_generate(msg.to_h) if dry_run?
+        amqp(msg) unless dry_run?
       end
 
-      # convert list of dot notation key.name=value into nested hash
-      def dothash(list)
-        input_hash = list.inject({}) {|h, e| (k,v)=e.split('='); h[k]=v; h}
-        input_hash.map do |main_key, main_value|
-          main_key.to_s.split(".").reverse.inject(main_value) do |value, key|
-            {key.to_sym => value(value)}
+      def amqp(msg)
+        response = msg.response
+        srv = server || Slnky.config['slnky']['url']
+        config = Slnky::Data.new(Slnky.get_server_config(srv, :command))
+
+        AMQP.start("amqp://#{config.rabbit.host}:#{config.rabbit.port}") do |connection|
+          @channel = AMQP::Channel.new(connection)
+          @channel.on_error do |ch, channel_close|
+            raise "Channel-level exception: #{channel_close.reply_text}"
           end
-        end.inject(&:deep_merge)
+
+          stopper = Proc.new do
+            # out :info, 'stopping'
+            connection.close { EventMachine.stop }
+          end
+          Signal.trap("INT", stopper)
+          Signal.trap("TERM", stopper)
+
+          exchange = @channel.direct('slnky.response')
+          queue = @channel.queue("command.#{response}.response", auto_delete: true).bind(exchange, routing_key: response)
+          queue.subscribe do |raw|
+            message = Slnky::Message.parse(raw)
+            if message.level.to_sym == :complete
+              stopper.call
+            else
+              out message.level, message.message
+            end
+          end
+
+          EventMachine.add_periodic_timer(timeout) do
+            out :error, "timed out after #{timeout} seconds"
+            stopper.call
+          end
+
+          out :info, 'sending command'
+          Slnky.notify(msg, srv)
+        end
       end
 
-      # convert value from string to internal types
-      def value(value)
-        return value unless value.is_a?(String)
-        case value
-          when 'true'
-            true
-          when 'false'
-            false
-          when /^\d+\.\d+\.\d+/ # ip addr
-            value
-          when /^\d+$/ # number
-            value.to_i
-          when /^[\d\.]+$/ # float
-            value.to_f
-          else
-            value
-        end
+      def out(level, message)
+        puts "%s [%-6s] %s" % [Time.now, level, message]
       end
     end
   end

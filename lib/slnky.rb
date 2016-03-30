@@ -7,6 +7,7 @@ require 'slnky/generator'
 
 require 'rest_client'
 require 'active_support/all'
+require 'open-uri'
 
 module Slnky
   class << self
@@ -22,6 +23,10 @@ module Slnky
     def load_config(file='~/.slnky/config.yaml')
       path = File.expand_path(file)
       @config = Slnky::Data.new(YAML.load_file(path))
+    end
+
+    def get_server_config(server, name)
+      JSON.parse(open("#{server}/configs/#{name}") {|f| f.read })
     end
 
     def notify(msg, server=nil)

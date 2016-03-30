@@ -37,6 +37,7 @@ module Slnky
           @exchanges = Slnky::Service::Exchanges.new(@channel)
           @exchanges.create('events')
           @exchanges.create('logs')
+          @exchanges.create('response', type: :direct)
 
           @queues = Slnky::Service::Queues.new(@channel)
           @queues.create(@name, @exchanges['events'])
@@ -53,6 +54,10 @@ module Slnky
 
           run
 
+          @subscriptions.add "slnky.#{@name}.command", :handle_command
+          # @subscriptions.add "slnky.all.command", :handle_command
+          @subscriptions.add "slnky.service.restart", :handle_restart
+
           @subscriptions.each do |name, method|
             log :info, "subscribed to: #{name} -> #{self.class.name}.#{method}"
           end
@@ -63,13 +68,6 @@ module Slnky
             data = message.payload
             @subscriptions.for(event) do |name, method|
               self.send(method.to_sym, event, data)
-            end
-            if event == 'slnky.service.restart'
-              # if we get this event, just stop. upstart will start us again.
-              log :warn, "received restart event"
-              stopper.call
-            elsif event == "slnky.#{@name}.command"
-              handle_command(event, data)
             end
           end
 
@@ -83,16 +81,26 @@ module Slnky
 
       def handle_command(name, data)
         req = Slnky::Command::Request.new(data)
-        res = Slnky::Command::Response.new(output: nil)
+        res = Slnky::Command::Response.new(@channel, @exchanges['response'], data.response)
         begin
           k = "Slnky::#{@name.capitalize}::Command".constantize
-          k.new(config)
-          k.send(req.command, req, res)
-          puts res.output
+          c = k.new(config)
+          if c.respond_to?(req.command)
+            c.send(req.command, req, res)
+          else
+            res.error "no method: #{req.command}"
+          end
         rescue => e
+          res.error "failed to run command: #{name}: #{data.command}"
           log :error, "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"
         end
-        res
+        res.done!
+      end
+
+      def handle_restart(name, data)
+        # if we get this event, just stop. upstart will start us again.
+        log :warn, "received restart event"
+        stopper.call
       end
 
       protected
@@ -141,7 +149,7 @@ module Slnky
         # a server locally or configure your development service to
         # talk to production server
         if !config || config.count == 0
-          config = JSON.parse(open("#{@server}/configs/#{@name}") {|f| f.read })
+          config = Slnky.get_server_config(@server, @name)
         end
         DeepStruct.new(config)
       end
@@ -159,6 +167,7 @@ module Slnky
           @periodics ||= Slnky::Service::Periodics.new
           @periodics.add(seconds, method)
         end
+
         alias_method :timer, :periodic
       end
 

@@ -7,8 +7,7 @@ module Slnky
       end
 
       def echo(request, response)
-        # pong
-        args = request.arguments
+        args = request.arguments||[]
         response.output = args.join(" ")
       end
     end

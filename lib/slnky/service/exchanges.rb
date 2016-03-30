@@ -14,6 +14,8 @@ module Slnky
             case options[:type]
               when :fanout
                 @channel.fanout("slnky.#{name}")
+              when :direct
+                @channel.direct("slnky.#{name}")
               else
                 raise "unknown exchange type: #{options[:type]}"
             end
