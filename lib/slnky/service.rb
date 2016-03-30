@@ -25,6 +25,8 @@ module Slnky
         @periodics = self.class.periodics || Slnky::Service::Periodics.new
         @hostname = Socket.gethostname
         @ipaddress = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address
+
+        @command = "Slnky::#{@name.capitalize}::Command".constantize.new(config)
       end
 
       def start
@@ -59,6 +61,7 @@ module Slnky
           end
 
           @subscriptions.add "slnky.#{@name}.command", :handle_command
+          @subscriptions.add "slnky.help.command", :handle_help
           # @subscriptions.add "slnky.all.command", :handle_command
           @subscriptions.add "slnky.service.restart", :handle_restart
 
@@ -79,13 +82,22 @@ module Slnky
         end
       end
 
+      def handle_help(name, data)
+        begin
+          req = Slnky::Command::Request.new(data)
+          res = Slnky::Command::Response.new(@channel, @exchanges['response'], data.response, "#{@ipaddress}/#{@name}-#{$$}")
+          @command.handle_help(req, res)
+        rescue => e
+          res.error "failed to run command: #{name}: #{data.command}"
+          log :error, "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"
+        end
+      end
+
       def handle_command(name, data)
         req = Slnky::Command::Request.new(data)
         res = Slnky::Command::Response.new(@channel, @exchanges['response'], data.response, "#{@ipaddress}/#{@name}-#{$$}")
         begin
-          k = "Slnky::#{@name.capitalize}::Command".constantize
-          c = k.new(config)
-          c.handle(req, res)
+          @command.handle(req, res)
         rescue => e
           res.error "failed to run command: #{name}: #{data.command}"
           log :error, "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"

@@ -35,10 +35,14 @@ module Slnky
         end
       rescue Docopt::Exit => e
         res.output e.message
+      rescue => e
+        res.error "error in #{req.command}: #{e.message}"
       end
 
-      def handle_help
-
+      def handle_help(req, res)
+        @commands.each do |command|
+          res.output command.doc.lines.first
+        end
       end
 
       class << self
@@ -53,8 +57,7 @@ module Slnky
     class Processor
       attr_reader :name
       attr_reader :help
-      attr_reader :banner
-      attr_reader :usage
+      attr_reader :doc
 
       def initialize(name, help, doc)
         @name = name.to_s
