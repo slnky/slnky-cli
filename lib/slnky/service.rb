@@ -54,13 +54,13 @@ module Slnky
 
           run
 
-          @subscriptions.add "slnky.#{@name}.command", :handle_command
-          # @subscriptions.add "slnky.all.command", :handle_command
-          @subscriptions.add "slnky.service.restart", :handle_restart
-
           @subscriptions.each do |name, method|
             log :info, "subscribed to: #{name} -> #{self.class.name}.#{method}"
           end
+
+          @subscriptions.add "slnky.#{@name}.command", :handle_command
+          # @subscriptions.add "slnky.all.command", :handle_command
+          @subscriptions.add "slnky.service.restart", :handle_restart
 
           @queues[@name].subscribe do |raw|
             message = parse(raw)
