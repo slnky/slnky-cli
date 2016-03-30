@@ -15,16 +15,6 @@ module Slnky
         Slnky::Data.new(config)
       end
 
-      def options(args, desc=nil, &block)
-        command = (caller[0] =~ /`([^']*)'/ and $1)
-        banner = "usage: #{command} [options] ..."
-        banner += "\n  #{desc}" if desc
-        Slop.parse(args) do |slop|
-          slop.banner = banner
-          yield slop
-        end
-      end
-
       def handle(req, res)
         processor = @commands.select{|c| c.name == req.command}.first
         if processor
@@ -36,19 +26,19 @@ module Slnky
       rescue Docopt::Exit => e
         res.output e.message
       rescue => e
-        res.error "error in #{req.command}: #{e.message}"
+        res.error "error in #{req.command}: #{e.message} at #{e.backtrace.first}"
       end
 
-      def handle_help(req, res)
+      def handle_help(req, res, opts)
         @commands.each do |command|
-          res.output command.doc.lines.first
+          res.output "#{command.name}: #{command.usage}\n  #{command.help}"
         end
       end
 
       class << self
         attr_reader :commands
         def command(name, help, desc)
-          @commands ||= []
+          @commands ||= [ Slnky::Command::Processor.new('help', 'print help', 'Usage: help [options]') ]
           @commands << Slnky::Command::Processor.new(name, help, desc)
         end
       end
@@ -65,6 +55,10 @@ module Slnky
         @doc = doc
       end
 
+      def usage
+        doc.lines.first.chomp
+      end
+
       def process(args)
         opts = Docopt::docopt(@doc, argv: args)
         data = Slnky::Data.new
@@ -74,29 +68,6 @@ module Slnky
         end
         data
       end
-
-      # def process(args)
-      #   opts = Slop.parse(args) do |slop|
-      #     slop.banner = @help
-      #     @usage.each do |line|
-      #       next unless line =~ /^\-/
-      #       (short, long, desc) = line.split(/\s+/, 3)
-      #       (type, desc) = desc.split(':', 2)
-      #       if desc
-      #         type = type.to_sym
-      #       else
-      #         desc = type
-      #         type = :on
-      #       end
-      #       puts "line: #{[type, short, long, desc]}"
-      #       slop.send(type, short, long, desc)
-      #     end
-      #   end
-      #   options = Slnky::Data.new(opts.to_hash)
-      #   options.args = args
-      #   puts options.inspect
-      #   options
-      # end
     end
   end
 end
