@@ -81,15 +81,11 @@ module Slnky
 
       def handle_command(name, data)
         req = Slnky::Command::Request.new(data)
-        res = Slnky::Command::Response.new(@channel, @exchanges['response'], data.response)
+        res = Slnky::Command::Response.new(@channel, @exchanges['response'], data.response, "#{@ipaddress}/#{@name}-#{$$}")
         begin
           k = "Slnky::#{@name.capitalize}::Command".constantize
           c = k.new(config)
-          if c.respond_to?(req.command)
-            c.send(req.command, req, res)
-          else
-            res.error "no method: #{req.command}"
-          end
+          c.handle(req, res)
         rescue => e
           res.error "failed to run command: #{name}: #{data.command}"
           log :error, "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"

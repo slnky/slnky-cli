@@ -3,7 +3,7 @@ module Slnky
     class Command < Base
       # option %w{-s --server}, '[SERVER]', 'set server url', environment_variable: 'SLNKY_SERVER'
       option %w{-n --dry-run}, :flag, "just output the event, don't send"
-      option %w{-t --timeout}, '[TIMEOUT]', "just output the event, don't send", default: 10 do |t|
+      option %w{-t --timeout}, '[TIMEOUT]', "time to wait for response in seconds", default: 10 do |t|
         Integer(t)
       end
       parameter 'SERVICE', 'the name of the service'
@@ -51,7 +51,7 @@ module Slnky
             if message.level.to_sym == :complete
               stopper.call
             else
-              out message.level, message.message
+              out message.level, message.message, message.service
             end
           end
 
@@ -60,13 +60,21 @@ module Slnky
             stopper.call
           end
 
-          out :info, 'sending command'
           Slnky.notify(msg, srv)
         end
       end
 
-      def out(level, message)
-        puts "%s [%-6s] %s" % [Time.now, level, message]
+      def out(level, message, service=:local)
+        # unless @remote[service]
+        #   say "<%= color('response from service: #{data.service}', BOLD) %>"
+        #   @first = true
+        # end
+        # color = level.to_s == 'info' ? 'GREEN' : 'RED'
+        # say "<%= color(\"#{service}\", GRAY) %> <%= color(\"#{message}\", #{color}) %>"
+        lines = message.split("\n")
+        lines.each do |line|
+          puts "#{service} #{line}"
+        end
       end
     end
   end

@@ -1,10 +1,11 @@
 module Slnky
   module Command
     class Response
-      def initialize(channel, exchange, route)
+      def initialize(channel, exchange, route, service)
         @channel = channel
         @exchange = exchange
         @route = route
+        @service = service
       end
 
       def output(message)
@@ -22,7 +23,7 @@ module Slnky
       private
 
       def msg(level, message)
-        Slnky::Message.new({level: level, message: message})
+        Slnky::Message.new({level: level, message: message, service: @service})
       end
 
       def pub(level, message)
