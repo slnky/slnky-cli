@@ -1,8 +1,10 @@
-require 'slnky'
 require 'yaml'
 require 'clamp'
 require 'active_support/all'
 require 'highline'
+
+require 'slnky'
+require 'slnky/generator'
 
 module Slnky
   module CLI

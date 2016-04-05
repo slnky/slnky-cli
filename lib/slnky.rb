@@ -1,13 +1,15 @@
-require 'slnky/version'
-require 'slnky/data'
-require 'slnky/message'
-require 'slnky/service'
-require 'slnky/command'
-require 'slnky/generator'
-
 require 'rest_client'
 require 'active_support/all'
 require 'open-uri'
+require 'json'
+
+require 'slnky/version'
+require 'slnky/data'
+require 'slnky/system'
+require 'slnky/message'
+require 'slnky/service'
+require 'slnky/transport'
+require 'slnky/command'
 
 module Slnky
   class << self
@@ -27,6 +29,10 @@ module Slnky
 
     def get_server_config(server, name)
       JSON.parse(open("#{server}/configs/#{name}") {|f| f.read })
+    end
+
+    def heartbeat(server, name)
+      RestClient.post "#{server}/hooks/heartbeat", {name: name}, content_type: :json, accept: :json
     end
 
     def notify(msg, server=nil)

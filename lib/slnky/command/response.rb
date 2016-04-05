@@ -1,19 +1,27 @@
 module Slnky
   module Command
     class Response
-      def initialize(channel, exchange, route, service)
-        @channel = channel
-        @exchange = exchange
+      def initialize(route, service)
+        @transport = Slnky::Transport.instance
+        @channel = @transport.channel
+        @exchange = @transport.exchanges['response']
         @route = route
-        @service = service
+        @service = Slnky::System.pid(service)
+        start!
+      end
+
+      [:info, :warn, :error].each do |l|
+        define_method(l) do |message|
+          pub l, message
+        end
       end
 
       def output(message)
-        pub :info, message
+        info(message)
       end
 
-      def error(message)
-        pub :error, message
+      def start!
+        pub :start, "start"
       end
 
       def done!
