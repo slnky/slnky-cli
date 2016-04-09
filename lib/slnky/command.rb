@@ -6,9 +6,10 @@ require 'docopt'
 module Slnky
   module Command
     class Base
-      def initialize(config={})
-        @config = load_config(config)
+      def initialize
+        @config = Slnky.config
         @commands = self.class.commands
+        @log = Slnky.log
       end
 
       def load_config(config)
@@ -16,29 +17,40 @@ module Slnky
       end
 
       def handle(req, res)
-        processor = @commands.select{|c| c.name == req.command}.first
-        if processor
-          options = processor.process(req.args)
-          self.send("handle_#{processor.name}", req, res, options)
-        else
-          res.error "unkown command: #{req.command}"
+        begin
+          @log.response = res
+          processor = @commands.select { |c| c.name == req.command }.first
+          if processor
+            options = processor.process(req.args)
+            self.send("handle_#{processor.name}", req, res, options)
+          else
+            @log.error "unkown command: #{req.command}"
+          end
+        rescue Docopt::Exit => e
+          @log.info e.message
+        rescue => e
+          @log.error "error in #{req.command}: #{e.message} at #{e.backtrace.first}"
+        ensure
+          @log.response = false
         end
-      rescue Docopt::Exit => e
-        res.output e.message
-      rescue => e
-        res.error "error in #{req.command}: #{e.message} at #{e.backtrace.first}"
       end
 
-      def handle_help(req, res, opts)
-        @commands.each do |command|
-          res.output "#{command.name}: #{command.usage}\n  #{command.help}"
+      def handle_help(req, res, opts={})
+        begin
+          @log.response = res
+          @commands.each do |command|
+            @log.info "#{command.name}: #{command.usage}\n  #{command.help}"
+          end
+        ensure
+          @log.response = false
         end
       end
 
       class << self
         attr_reader :commands
+
         def command(name, help, desc)
-          @commands ||= [ Slnky::Command::Processor.new('help', 'print help', 'Usage: help [options]') ]
+          @commands ||= [Slnky::Command::Processor.new('help', 'print help', 'Usage: help [options]')]
           @commands << Slnky::Command::Processor.new(name, help, desc)
         end
       end

@@ -7,7 +7,7 @@ module Slnky
         Integer(t)
       end
       parameter 'SERVICE', 'the name of the service'
-      parameter 'COMMAND', 'the name of the command'
+      parameter '[COMMAND]', 'the name of the command', default: 'help'
       parameter '[ARGUMENTS] ...', <<-DESC.strip_heredoc, attribute_name: :args
         arguments to the command
         commands support options and command line arguments similarly to
@@ -15,41 +15,37 @@ module Slnky
       DESC
 
       def execute
+        @name = service
         data = {
             name: "slnky.#{service}.command",
-            command: command,
+            command: service == 'help' ? nil : command,
             args: args,
             response: "command-#{$$}",
         }
+        Slnky::Config.configure('cli')
         msg = Slnky::Message.new(data)
         puts JSON.pretty_generate(msg.to_h) if dry_run?
         amqp(msg) unless dry_run?
       end
 
+      def name
+        @name
+      end
+
       def amqp(msg)
         response = msg.response
-        srv = server || Slnky.config['slnky']['url']
-        config = Slnky::Data.new(Slnky.get_server_config(srv, :command))
+        tx = Slnky::Transport.instance
 
-        AMQP.start("amqp://#{config.rabbit.host}:#{config.rabbit.port}") do |connection|
-          @channel = AMQP::Channel.new(connection)
-          @channel.on_error do |ch, channel_close|
-            raise "Channel-level exception: #{channel_close.reply_text}"
-          end
-
-          stopper = Proc.new do
-            # out :info, 'stopping'
-            connection.close { EventMachine.stop }
-          end
-          Signal.trap("INT", stopper)
-          Signal.trap("TERM", stopper)
-
-          exchange = @channel.direct('slnky.response')
-          queue = @channel.queue("command.#{response}.response", auto_delete: true).bind(exchange, routing_key: response)
+        tx.start!(self) do |_|
+          tx.exchange('response', :direct)
+          queue = tx.queue(response, 'response', durable: false, auto_delete: true, routing_key: response)
           queue.subscribe do |raw|
             message = Slnky::Message.parse(raw)
-            if message.level.to_sym == :complete
-              stopper.call
+            level = message.level.to_sym
+            if level == :complete
+              tx.stop!
+            elsif level == :start
+              # start tracking responders?
             else
               out message.level, message.message, message.service
             end
@@ -57,10 +53,10 @@ module Slnky
 
           EventMachine.add_periodic_timer(timeout) do
             out :error, "timed out after #{timeout} seconds"
-            stopper.call
+            tx.stop!('Timed out')
           end
 
-          Slnky.notify(msg, srv)
+          Slnky.notify(msg)
         end
       end
 
@@ -73,7 +69,7 @@ module Slnky
         # say "<%= color(\"#{service}\", GRAY) %> <%= color(\"#{message}\", #{color}) %>"
         lines = message.split("\n")
         lines.each do |line|
-          puts "#{service} #{line}"
+          puts "#{service} [#{level}] #{line}"
         end
       end
     end

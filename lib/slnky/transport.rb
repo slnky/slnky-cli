@@ -1,18 +1,12 @@
 require 'amqp'
-# require 'slnky/transport/queues'
-# require 'slnky/transport/exchanges'
 
 module Slnky
   module Transport
     class << self
-      def setup(config)
-        @instance ||= begin
-          Slnky::Transport::Rabbit.new(config)
-        end
-      end
-
       def instance
-        @instance
+        @instance ||= begin
+          Slnky::Transport::Rabbit.new
+        end
       end
     end
 
@@ -22,11 +16,11 @@ module Slnky
       attr_reader :queues
       attr_reader :stopper
 
-      def initialize(config)
-        @host = config.rabbit.host
-        @port = config.rabbit.port
+      def initialize
+        @config = Slnky.config
+        @host = @config.rabbit.host
+        @port = @config.rabbit.port
         @url = "amqp://#{@host}:#{@port}"
-        @config = config
         @channel = nil
         @exchanges = {}
         @queues = {}
@@ -46,22 +40,24 @@ module Slnky
           exchange('events', :fanout)
           exchange('logs', :fanout)
           exchange('response', :direct)
-          queue(service, 'events')
+          queue(service.name, 'events')
 
           yield self if block_given?
 
-          queues.each do |name, queue|
-            queue.subscribe do |raw|
-              event = Slnky::Message.parse(raw)
-              service.subscriber.for(event.name) do |name, method|
-                service.send(method.to_sym, event.name, event.payload)
+          if service.is_a?(Slnky::Service::Base)
+            queues.each do |name, queue|
+              queue.subscribe do |raw|
+                event = Slnky::Message.parse(raw)
+                service.subscriber.for(event.name) do |name, method|
+                  service.send(method.to_sym, event.name, event.payload)
+                end
               end
             end
-          end
 
-          service.timers.each do |seconds, method|
-            EventMachine.add_periodic_timer(seconds) do
-              service.send(method.to_sym)
+            service.timers.each do |seconds, method|
+              EventMachine.add_periodic_timer(seconds) do
+                service.send(method.to_sym)
+              end
             end
           end
         end
@@ -69,7 +65,7 @@ module Slnky
 
       def stop!(msg=nil)
         return unless @connection
-        puts "#{Time.now}: stopping#{msg && " (#{msg})"}"
+        puts "#{Time.now}: stopping (#{msg})" if msg
         @connection.close { EventMachine.stop { exit } }
       end
 
@@ -93,7 +89,9 @@ module Slnky
         options = {
             durable: true
         }.merge(options)
-        @queues[desc] ||= @channel.queue(name, options).bind(@exchanges[exchange])
+        routing = options.delete(:routing_key)
+        bindoptions = routing ? {routing_key: routing} : {}
+        @queues[desc] ||= @channel.queue(name, options).bind(@exchanges[exchange], bindoptions)
       end
     end
   end

@@ -9,18 +9,20 @@ module Slnky
       attr_reader :config
       attr_reader :subscriber
       attr_reader :timers
+      attr_reader :name
 
-      def initialize(url, options={})
-        @server = url
+      def initialize
+        @config = Slnky::Config.instance
+        @server = @config.url
         @name = self.class.name.split('::')[1].downcase
-        @environment = options.delete(:environment) || 'development'
-        @config = load_config(options)
+        @config.service = @name
+        @environment = @config.environment
 
-        @transport = Slnky::Transport.setup(config)
+        @transport = Slnky::Transport.instance
         @subscriber = Slnky::Service.subscriber
         @timers = Slnky::Service.timers
 
-        @command = "Slnky::#{@name.capitalize}::Command".constantize.new(config) rescue nil
+        @command = "Slnky::#{@name.capitalize}::Command".constantize.new rescue nil
 
         @server_down = false
       end
@@ -33,7 +35,7 @@ module Slnky
           @subscriber.add "slnky.#{@name}.command", :handle_command
           @subscriber.add "slnky.help.command", :handle_help
           @subscriber.add "slnky.service.restart", :handle_restart
-          @timers.add 5.seconds, :handle_heartbeat
+          @timers.add 5.seconds, :handle_heartbeat unless @config.development?
 
           @subscriber.each do |name, method|
             log :info, "subscribed to: #{name} -> #{self.class.name}.#{method}"
@@ -117,16 +119,17 @@ module Slnky
       end
 
       def log(level, message)
-        data = {
-            service: "#{@name}-#{$$}",
-            level: level,
-            hostname: Slnky::System.hostname,
-            ipaddress: Slnky::System.ipaddress,
-            message: message
-        }
-        ex = @transport.exchanges['logs']
-        ex.publish(msg(data)) if ex # only log to the exchange if it's created
-        puts "%s [%6s] %s" % [Time.now, data[:level], data[:message]] if development? # log to the console if in development
+        # data = {
+        #     service: "#{@name}-#{$$}",
+        #     level: level,
+        #     hostname: Slnky::System.hostname,
+        #     ipaddress: Slnky::System.ipaddress,
+        #     message: message
+        # }
+        # ex = @transport.exchanges['logs']
+        # ex.publish(msg(data)) if ex # only log to the exchange if it's created
+        # puts "%s [%6s] %s" % [Time.now, data[:level], data[:message]] if development? # log to the console if in development
+        Slnky::Log.instance.send(level, message)
       end
 
       def development?
@@ -138,10 +141,11 @@ module Slnky
         # this is useful for testing, so you won't need to be running
         # a server locally or configure your development service to
         # talk to production server
-        if !config || config.count == 0
-          config = Slnky.get_server_config(@server, @name)
-        end
-        DeepStruct.new(config)
+        # if !config || config.count == 0
+        #   config = Slnky.get_server_config(@server, @name)
+        # end
+        # DeepStruct.new(config)
+        Slnky::Config.configure(config)
       end
 
       class << self
