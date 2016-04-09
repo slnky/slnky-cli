@@ -19,10 +19,6 @@ module Slnky
       Slnky::VERSION
     end
 
-    def log
-      Slnky::Log.instance
-    end
-
     def heartbeat(server, name)
       RestClient.post "#{server}/hooks/heartbeat", {name: name}, content_type: :json, accept: :json
     end

@@ -1,4 +1,10 @@
 module Slnky
+  class << self
+    def log
+      Slnky::Log.instance
+    end
+  end
+
   class Log
     class << self
       def instance
