@@ -1,11 +1,17 @@
 require 'spec_helper'
 
-describe Slnky::Service do
-  it 'has a version number' do
-    expect(Slnky::Service::VERSION).not_to be nil
+describe Slnky::Service::Base do
+  subject { described_class.new }
+
+  it 'can manage subscriptions' do
+    expect { described_class.subscribe('test.event', :method) }.to_not raise_error
+    expect(subject.subscriber.list.count).to eq(1)
+    expect(subject.subscriber.list.first).to be_a(Slnky::Service::Subscription)
   end
 
-  it 'does something useful' do
-    expect(false).to eq(true)
+  it 'can manage timers' do
+    expect { described_class.timer(5.seconds, :method) }.to_not raise_error
+    expect(subject.timers.list.count).to eq(1)
+    expect(subject.timers.list.first).to be_a(Slnky::Service::Periodic)
   end
 end
