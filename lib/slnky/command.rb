@@ -45,7 +45,7 @@ module Slnky
 
       def handle_help(req, res, opts={})
         @commands.each do |command|
-          log.info "#{command.name}: #{command.usage}\n  #{command.banner}"
+          log.info "#{name} #{command.name}: #{command.banner}"
         end
       end
 
@@ -94,7 +94,7 @@ module Slnky
         opts = Docopt::docopt(@doc, argv: args)
         data = Slnky::Data.new
         opts.each do |key, value|
-          k = key.gsub(/^--/, '')
+          k = key.gsub(/^--/, '').downcase
           data.send("#{k}=", value)
         end
         data
