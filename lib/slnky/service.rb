@@ -12,32 +12,9 @@ module Slnky
       attr_reader :name
 
       def initialize
-        @config = Slnky::Config.instance
-        @server = @config.url
-        @config.service = @name
-        @environment = @config.environment
-
+        config.service = name
+        @environment = config.environment
         @server_down = false
-      end
-
-      def name
-        @name ||= self.class.name.split('::')[1].downcase
-      end
-
-      def transport
-        @transport ||= Slnky::Transport.instance
-      end
-
-      def subscriber
-        @subscriber ||= Slnky::Service.subscriber
-      end
-
-      def timers
-        @timers ||= Slnky::Service.timers
-      end
-
-      def command
-        @command ||= "Slnky::#{@name.capitalize}::Command".constantize.new rescue nil
       end
 
       def start
@@ -45,10 +22,10 @@ module Slnky
           log.info "running"
           run
 
-          subscriber.add "slnky.#{@name}.command", :handle_command
+          subscriber.add "slnky.#{name}.command", :handle_command
           subscriber.add "slnky.help.command", :handle_command
           subscriber.add "slnky.service.restart", :handle_restart
-          timers.add 5.seconds, :handle_heartbeat unless @config.development?
+          timers.add 5.seconds, :handle_heartbeat unless config.development?
 
           subscriber.each do |name, method|
             log.info "subscribed to: #{name} -> #{self.class.name}.#{method}"
@@ -60,7 +37,7 @@ module Slnky
         if command
           command.handle(event, data)
         else
-          log.error "no comamnd support for #{@name}"
+          log.error "no comamnd support for #{name}"
         end
       end
 
@@ -72,10 +49,22 @@ module Slnky
 
       def handle_heartbeat
         return if @server_down
-        Slnky.heartbeat(@server, @name)
+        Slnky.heartbeat(name)
       rescue => e
         log.info "could not post heartbeat, server down? #{e.message}"
         @server_down = true
+      end
+
+      def subscriber
+        @subscriber ||= Slnky::Service.subscriber
+      end
+
+      def timers
+        @timers ||= Slnky::Service.timers
+      end
+
+      def name
+        @name ||= self.class.name.split('::')[1].downcase
       end
 
       protected
@@ -93,11 +82,19 @@ module Slnky
       end
 
       def log
-        @log ||= Slnky::Log.instance
+        Slnky::Log.instance
       end
 
-      def development?
-        @environment == 'development'
+      def config
+        Slnky.config
+      end
+
+      def transport
+        @transport ||= Slnky::Transport.instance
+      end
+
+      def command
+        @command ||= "Slnky::#{name.capitalize}::Command".constantize.new rescue nil
       end
 
       class << self

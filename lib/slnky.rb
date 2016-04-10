@@ -19,7 +19,8 @@ module Slnky
       Slnky::VERSION
     end
 
-    def heartbeat(server, name)
+    def heartbeat(name)
+      server = ENV['SLNKY_URL'] || Slnky.config.url
       RestClient.post "#{server}/hooks/heartbeat", {name: name}, content_type: :json, accept: :json
     end
 

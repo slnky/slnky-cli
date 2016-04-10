@@ -10,18 +10,6 @@ module Slnky
         @commands = self.class.commands
       end
 
-      def name
-        @name ||= self.class.name.split('::')[1].downcase
-      end
-
-      def config
-        @config ||= Slnky.config
-      end
-
-      def log
-        @log ||= Slnky.log
-      end
-
       def handle(event, data)
         begin
           req = Slnky::Command::Request.new(data)
@@ -63,6 +51,14 @@ module Slnky
         rescue => e
           log.error "error in #{req.command}: #{e.message} at #{e.backtrace.first}"
         end
+      end
+
+      def name
+        @name ||= self.class.name.split('::')[1].downcase
+      end
+
+      def log
+        @log ||= Slnky.log
       end
 
       class << self
