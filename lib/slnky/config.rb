@@ -47,6 +47,7 @@ module Slnky
       protected
 
       def config_file(file)
+        return {} if file =~ /\~/ && !ENV['HOME']
         path = File.expand_path(file)
         return {} unless File.exists?(path)
         template = Tilt::ERBTemplate.new(path)
