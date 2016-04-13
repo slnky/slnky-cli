@@ -20,7 +20,10 @@ module Slnky
         @config = Slnky.config
         @host = @config.rabbit.host
         @port = @config.rabbit.port
-        @url = "amqp://#{@host}:#{@port}"
+        @user = @config.rabbit.user
+        @pass = @config.rabbit.pass
+        userpass = @user ? "#{@user}:#{@pass}@" : ""
+        @url = "amqp://#{userpass}#{@host}:#{@port}"
         @channel = nil
         @exchanges = {}
         @queues = {}
