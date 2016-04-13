@@ -1,4 +1,10 @@
 require 'open-uri'
+require 'json'
+require 'yaml'
+require 'erb'
+require 'tilt'
+require 'dotenv'
+Dotenv.load
 
 module Slnky
   class << self
@@ -14,7 +20,7 @@ module Slnky
         @config ||= begin
           config['service'] = name
           config['environment'] ||= 'development'
-          file = ENV['SLINKY_CONFIG']||"~/.slnky/config.yaml"
+          file = ENV['SLNKY_CONFIG']||"~/.slnky/config.yaml"
           config.merge!(config_file(file))
           server = ENV['SLNKY_SERVER'] || config['url']
           config.merge!(config_server(server))
@@ -43,14 +49,22 @@ module Slnky
       def config_file(file)
         path = File.expand_path(file)
         return {} unless File.exists?(path)
-        d = YAML.load_file(path) rescue {}
+        template = Tilt::ERBTemplate.new(path)
+        output = template.render(self, {})
+        d = YAML.load(output)
         d['slnky'] ? d['slnky'] : d
+      rescue => e
+        puts "failed to load file #{file}: #{e.message}"
+        {}
       end
 
       def config_server(server)
         return {} unless server
         server = "https://#{server}" unless server =~ /^http/
-        JSON.parse(open("#{server}/configs/#{@name}") { |f| f.read }) rescue {}
+        JSON.parse(open("#{server}/configs/#{@name}") { |f| f.read })
+      rescue => e
+        puts "failed to load server #{server}: #{e.message}"
+        {}
       end
     end
 

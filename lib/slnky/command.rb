@@ -10,10 +10,10 @@ module Slnky
         @commands = self.class.commands
       end
 
-      def handle(event, data)
+      def handle(event, data, response=nil)
         begin
           req = Slnky::Command::Request.new(data)
-          res = Slnky::Command::Response.new(data.response, name)
+          res = response || Slnky::Command::Response.new(data.response, name)
           log.response = res
           res.start!
 
@@ -48,8 +48,6 @@ module Slnky
           end
         rescue Docopt::Exit => e
           log.info e.message
-        rescue => e
-          log.error "error in #{req.command}: #{e.message} at #{e.backtrace.first}"
         end
       end
 

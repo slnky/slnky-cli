@@ -94,5 +94,15 @@ module Slnky
         @queues[desc] ||= @channel.queue(name, options).bind(@exchanges[exchange], bindoptions)
       end
     end
+
+    class MockExchange
+      def initialize
+        @verbose = false
+      end
+
+      def publish(object, options={})
+        puts "publish: #{object.inspect}: #{options.inspect}" if @verbose
+      end
+    end
   end
 end

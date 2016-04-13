@@ -1,17 +1,18 @@
 module Slnky
   module Command
     class Response
+      attr_reader :log
+
       def initialize(route, service)
-        @transport = Slnky::Transport.instance
-        @channel = @transport.channel
-        @exchange = @transport.exchanges['response']
         @route = route
         @service = Slnky::System.pid(service)
-        start!
+        @started = false
+        @log = []
       end
 
       [:info, :warn, :error].each do |l|
         define_method(l) do |message|
+          start! unless @started
           pub l, message
         end
       end
@@ -22,10 +23,15 @@ module Slnky
 
       def start!
         pub :start, "start"
+        @started = true
       end
 
       def done!
         pub :complete, "complete"
+      end
+
+      def exchange=(exchange)
+        @exchange = exchange
       end
 
       private
@@ -36,7 +42,20 @@ module Slnky
 
       def pub(level, message)
         # puts "#{level} #{message}"
-        @exchange.publish(msg(level, message), routing_key: @route)
+        exchange.publish(msg(level, message), routing_key: @route)
+        @log << message
+      end
+
+      def exchange
+        @exchange ||= transport.exchanges['response']
+      end
+
+      def transport
+        @transport ||= Slnky::Transport.instance
+      end
+
+      def channel
+        @channel ||= transport.channel
       end
     end
   end
