@@ -2,7 +2,9 @@ module Slnky
   module CLI
     class Service < Base
       subcommand 'run', 'run service named NAME' do
-        parameter 'NAME', 'the name of the service'
+        parameter 'NAME', 'the name of the service' do |n|
+          n.gsub(/^slnky-/, '')
+        end
         # option %w{-f --force}, :flag, "force overwrite of files"
         option %w{-e --environment}, '[ENV]', 'the environment to run under', default: 'development', environment_variable: 'SLNKY_ENV'
         def execute
