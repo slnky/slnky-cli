@@ -22,7 +22,7 @@ module Slnky
           config['environment'] ||= 'development'
           file = ENV['SLNKY_CONFIG']||"~/.slnky/config.yaml"
           config.merge!(config_file(file))
-          server = ENV['SLNKY_SERVER'] || config['url']
+          server = ENV['SLNKY_URL']||config['url']
           config.merge!(config_server(server))
           self.new(config)
         end

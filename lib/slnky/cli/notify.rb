@@ -1,7 +1,6 @@
 module Slnky
   module CLI
     class Notify < Base
-      # option %w{-s --server}, '[SERVER]', 'set server url', environment_variable: 'SLNKY_SERVER'
       option %w{-f --file}, '[FILE]', 'load attributes from yaml file' do |f|
         unless File.exist?(f)
           puts "ERROR: file #{f} does not exist"

@@ -20,7 +20,7 @@ module Slnky
         c
       end
 
-      option %w{-s --server}, '[SERVER]', 'set server url', environment_variable: 'SLNKY_SERVER'
+      option %w{-s --server}, '[URL]', 'set server url', environment_variable: 'SLNKY_URL'
     end
 
     class Main < Base
