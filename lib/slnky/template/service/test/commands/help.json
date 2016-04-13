@@ -1,0 +1,9 @@
+{
+  "name": "slnky.help.command",
+  "payload": {
+    "command": "help",
+    "args": [
+    ],
+    "responder": "STDOUT"
+  }
+}

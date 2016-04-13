@@ -2,16 +2,22 @@ require 'spec_helper'
 
 describe Slnky::<%= cap %>::Command do
   subject do
-    s = described_class.new("http://localhost:3000", test_config)
-    s.client = Slnky::<%= cap %>::Mock.new(test_config)
+    s = described_class.new
+    s.client = Slnky::<%= cap %>::Mock.new
     s
   end
-  let(:echo) { command('echo').payload }
-  let(:response) { Slnky::Command::Response.new() }
+  let(:echo) { slnky_command('echo') }
+  let(:help) { slnky_command('help') }
+  let(:echo_response) { slnky_response('test-route', 'spec') }
+  let(:help_response) { slnky_response('test-route', 'spec') }
 
   it 'handles echo' do
-    resp = response
-    expect(subject.echo(echo, resp)).not_to raise_error
-    expect(resp.output).to eq("test echo")
+    expect { subject.handle(echo.name, echo.payload, echo_response) }.to_not raise_error
+    expect(echo_response.log).to include("test echo")
+  end
+
+  it 'handles help' do
+    expect { subject.handle(help.name, help.payload, help_response) }.to_not raise_error
+    expect(help_response.log).to include("<%= name %> help: print help")
   end
 end
