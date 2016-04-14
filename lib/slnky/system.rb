@@ -3,7 +3,8 @@ require 'socket'
 module Slnky
   class System
     class << self
-      def pid(service)
+      def pid
+        service = Slnky.config.service || 'unknown'
         "#{ipaddress}/#{service}-#{$$}"
       end
 

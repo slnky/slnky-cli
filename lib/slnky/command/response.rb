@@ -4,8 +4,9 @@ module Slnky
       attr_reader :log
 
       def initialize(route, service)
+        Slnky.config.service = service
         @route = route
-        @service = Slnky::System.pid(service)
+        @service = Slnky::System.pid
         @started = false
         @log = []
       end

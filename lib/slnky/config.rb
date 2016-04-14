@@ -16,16 +16,16 @@ module Slnky
   class Config < Data
     class << self
       def configure(name, config={})
+        config.deep_stringify_keys!
         @name = name
-        @config ||= begin
-          config['service'] = name
-          config['environment'] ||= 'development'
-          file = ENV['SLNKY_CONFIG']||"~/.slnky/config.yaml"
-          config.merge!(config_file(file))
-          server = ENV['SLNKY_URL']||config['url']
-          config.merge!(config_server(server))
-          self.new(config)
-        end
+        @environment = ENV['SLNKY_ENV'] || config['environment'] || 'development'
+        config['service'] = name
+        config['environment'] = @environment
+        file = ENV['SLNKY_CONFIG']||"~/.slnky/config.yaml"
+        config.merge!(config_file(file))
+        server = ENV['SLNKY_URL']||config['url']
+        config.merge!(config_server(server))
+        @config = self.new(config)
       end
 
       # def load_file(file)
@@ -52,8 +52,10 @@ module Slnky
         return {} unless File.exists?(path)
         template = Tilt::ERBTemplate.new(path)
         output = template.render(self, {})
-        d = YAML.load(output)
-        d['slnky'] ? d['slnky'] : d
+        cfg = YAML.load(output)
+        cfg = cfg['slnky'] || cfg
+        cfg = cfg[@environment] || cfg
+        cfg
       rescue => e
         puts "failed to load file #{file}: #{e.message}"
         {}

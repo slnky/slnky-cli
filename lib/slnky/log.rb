@@ -69,6 +69,9 @@ module Slnky
       def initialize
         super
         @logger = Logger.new(STDOUT)
+        @logger.formatter = proc do |severity, datetime, progname, msg|
+          "%-5s %s: %s\n" % [severity, datetime, msg]
+        end
       end
 
       protected
@@ -85,28 +88,31 @@ module Slnky
 
       def initialize
         super
-        @service = Slnky::System.pid('unknown')
+        @service = Slnky::System.pid
         @hostname = Slnky::System.hostname
         @ipaddress = Slnky::System.ipaddress
-        @transport = Slnky::Transport.instance
-        @exchange = nil
-        if @transport
-          @exchange = @transport.exchanges['logs']
-        end
       end
 
       protected
 
       def log(level, message)
-        return unless @exchange
+        return unless exchange
         data = {
-            service: "#{@name}-#{$$}",
+            service: @service,
             level: level,
             hostname: @hostname,
             ipaddress: @ipaddress,
             message: message
         }
-        @exchange.publish(msg(data))
+        exchange.publish(msg(data))
+      end
+
+      def transport
+        @transport ||= Slnky::Transport.instance
+      end
+
+      def exchange
+        @exchange ||= transport.exchanges['logs']
       end
 
       def msg(data)

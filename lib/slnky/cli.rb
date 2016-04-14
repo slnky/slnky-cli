@@ -14,13 +14,15 @@ module Slnky
         exit(0)
       end
 
-      option %w{-c --config}, '[CONFIG]', 'set config directory location', default: '~/.slnky', environment_variable: 'SLNKY_CONFIG' do |c|
-        p = File.expand_path("#{c}/config.yaml")
-        Slnky.load_config(p)
-        c
+      option %w{-c --config}, '[CONFIG]', 'set config directory location', default: '~/.slnky/config.yaml', environment_variable: 'SLNKY_CONFIG' do |c|
+        ENV['SLNKY_CONFIG'] = c
       end
-
-      option %w{-s --server}, '[URL]', 'set server url', environment_variable: 'SLNKY_URL'
+      option %w{-s --server}, '[URL]', 'set server url', environment_variable: 'SLNKY_URL' do |u|
+        ENV['SLNKY_URL'] = u
+      end
+      option %w{-e --environment}, '[ENV]', 'the environment to run under', default: 'development', environment_variable: 'SLNKY_ENV' do |e|
+        ENV['SLNKY_ENV'] = e
+      end
     end
 
     class Main < Base
@@ -32,7 +34,9 @@ module Slnky
           FileUtils.mkdir_p(dir)
           defaults = {
               slnky: {
-                  url: server
+                  development: {
+                    url: server
+                  }
               }
           }.deep_stringify_keys
           File.open("#{dir}/config.yaml", "w+") { |f| f.write(defaults.to_yaml) }

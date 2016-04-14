@@ -6,7 +6,6 @@ module Slnky
           n.gsub(/^slnky-/, '')
         end
         # option %w{-f --force}, :flag, "force overwrite of files"
-        option %w{-e --environment}, '[ENV]', 'the environment to run under', default: 'development', environment_variable: 'SLNKY_ENV'
         def execute
           lib = File.expand_path("#{Dir.pwd}/lib", __FILE__)
           $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)

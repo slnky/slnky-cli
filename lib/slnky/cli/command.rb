@@ -1,6 +1,7 @@
 module Slnky
   module CLI
     class Command < Base
+      # option %w{-s --server}, '[SERVER]', 'set server url', environment_variable: 'SLNKY_SERVER'
       option %w{-n --dry-run}, :flag, "just output the event, don't send"
       option %w{-t --timeout}, '[TIMEOUT]', "time to wait for response in seconds", default: 10 do |t|
         Integer(t)
@@ -15,13 +16,13 @@ module Slnky
 
       def execute
         @name = service
+        Slnky::Config.configure(@name, environment: environment)
         data = {
             name: "slnky.#{service}.command",
             command: service == 'help' ? nil : command,
             args: args,
             response: "command-#{$$}",
         }
-        Slnky::Config.configure('cli')
         msg = Slnky::Message.new(data)
         puts JSON.pretty_generate(msg.to_h) if dry_run?
         amqp(msg) unless dry_run?

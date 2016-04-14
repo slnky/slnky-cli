@@ -13,7 +13,6 @@ module Slnky
 
       def initialize
         config.service = name
-        @environment = config.environment
         @server_down = false
       end
 
