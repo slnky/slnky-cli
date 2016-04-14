@@ -9,8 +9,9 @@ require 'slnky/config'
 require 'slnky/log'
 require 'slnky/system'
 require 'slnky/message'
-require 'slnky/service'
 require 'slnky/transport'
+require 'slnky/service'
+require 'slnky/client'
 require 'slnky/command'
 
 module Slnky

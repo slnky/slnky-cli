@@ -35,10 +35,10 @@ module Slnky
 
     [:debug, :info, :warn, :error].each do |l|
       define_method(l) do |message|
-        bl = @local ? 'x' : 'o'
-        br = @remote ? 'x' : 'o'
-        bs = @response ? 'x' : 'o'
-        puts "#{l}:#{bl}#{br}#{bs} #{message}"
+        # bl = @local ? 'x' : 'o'
+        # br = @remote ? 'x' : 'o'
+        # bs = @response ? 'x' : 'o'
+        # puts "#{l}:#{bl}#{br}#{bs} #{message}"
         log(l, message)
       end
     end
