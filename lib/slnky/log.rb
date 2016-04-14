@@ -22,7 +22,7 @@ module Slnky
       @response = false
       case @config.environment
         when 'production'
-          @local   = false
+          @local   = Slnky::Log::Local.new
           @service = Slnky::Log::Service.new
         when 'test'
           @local   = false
@@ -66,7 +66,7 @@ module Slnky
     end
 
     class Local < Base
-      def initialize
+      def initialize(file=STDOUT)
         super
         @logger = Logger.new(STDOUT)
         @logger.formatter = proc do |severity, datetime, progname, msg|

@@ -14,6 +14,7 @@ module Slnky
         begin
           req = Slnky::Command::Request.new(data)
           res = response || Slnky::Command::Response.new(data.response, name)
+          log.info "setting res: #{res.inspect}"
           log.response = res
           res.start!
 
@@ -28,6 +29,7 @@ module Slnky
         ensure
           res.done!
           log.response = false
+          log.info "unset res: #{res.inspect}"
         end
       end
 
