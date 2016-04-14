@@ -9,6 +9,7 @@ describe Slnky::<%= cap %>::Service do
   let(:test_event) { event_load('test')}
 
   it 'handles event' do
-    expect(subject.handler(test_event.name, test_event.payload)).to eq(true)
+    # test that the handler method receives and responds correctly
+    expect(subject.handle_test(test_event.name, test_event.payload)).to eq(true)
   end
 end
