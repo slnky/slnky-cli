@@ -66,7 +66,7 @@ module Slnky
     end
 
     class Local < Base
-      def initialize(file=STDOUT)
+      def initialize
         super
         @logger = Logger.new(STDOUT)
         @logger.formatter = proc do |severity, datetime, progname, msg|
