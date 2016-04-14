@@ -18,7 +18,7 @@ module Slnky
 
       def start
         transport.start!(self) do |_|
-          log.info "running"
+          log.info "#{config.service} running #{config.environment}"
           run
 
           subscriber.add "slnky.#{name}.command", :handle_command

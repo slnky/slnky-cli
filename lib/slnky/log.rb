@@ -35,6 +35,10 @@ module Slnky
 
     [:debug, :info, :warn, :error].each do |l|
       define_method(l) do |message|
+        bl = @local ? 'x' : 'o'
+        br = @remote ? 'x' : 'o'
+        bs = @response ? 'x' : 'o'
+        puts "#{l}:#{bl}#{br}#{bs} #{message}"
         log(l, message)
       end
     end
@@ -70,7 +74,7 @@ module Slnky
         super
         @logger = Logger.new(STDOUT)
         @logger.formatter = proc do |severity, datetime, progname, msg|
-          "%-5s %s: %s\n" % [severity, datetime, msg]
+          "%-5s %s: %s: %s\n" % [severity, datetime, Slnky::System.pid, msg]
         end
       end
 
