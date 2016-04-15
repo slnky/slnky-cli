@@ -24,10 +24,11 @@ module Slnky
           end
 
         rescue => e
+          puts "ERROR: #{e.message}"
           log.error "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"
         ensure
-          res.done!
           log.response = false
+          res.done!
         end
       end
 
