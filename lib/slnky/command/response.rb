@@ -45,7 +45,7 @@ module Slnky
       def pub(level, message)
         # puts "#{level} #{message}"
         exchange.publish(msg(level, message), routing_key: @route)
-        @log << message
+        @trace << message
       end
 
       def exchange
