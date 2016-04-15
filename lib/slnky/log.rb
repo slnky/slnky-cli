@@ -22,7 +22,7 @@ module Slnky
       @response = false
       case @config.environment
         when 'production'
-          @local   = false
+          @local   = Slnky::Log::Local.new
           @service = Slnky::Log::Service.new
         when 'test'
           @local   = false
