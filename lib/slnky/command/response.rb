@@ -14,7 +14,6 @@ module Slnky
       [:debug, :info, :warn, :error].each do |l|
         define_method(l) do |message|
           start! unless @started
-          log.local.send(l, "RESPONSE: #{@route}: #{message}")
           pub l, message
         end
       end
