@@ -14,7 +14,6 @@ module Slnky
       [:info, :warn, :error].each do |l|
         define_method(l) do |message|
           start! unless @started
-          log.local.send(l, "RESPONSE: #{message}")
           pub l, message
         end
       end
@@ -46,6 +45,14 @@ module Slnky
         # puts "#{level} #{message}"
         exchange.publish(msg(level, message), routing_key: @route)
         @trace << message
+      end
+
+      def config
+        Slnky.config
+      end
+
+      def log
+        Slnky.log
       end
 
       def exchange
