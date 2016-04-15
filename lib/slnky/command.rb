@@ -90,8 +90,8 @@ module Slnky
         doc.lines.first.chomp
       end
 
-      def process(args=[])
-        opts = Docopt::docopt(@doc, argv: args)
+      def process(args)
+        opts = Docopt::docopt(@doc, argv: args||[])
         data = Slnky::Data.new
         opts.each do |key, value|
           k = key.gsub(/^--/, '').downcase
