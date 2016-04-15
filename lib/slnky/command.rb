@@ -90,7 +90,7 @@ module Slnky
         doc.lines.first.chomp
       end
 
-      def process(args)
+      def process(args=[])
         opts = Docopt::docopt(@doc, argv: args)
         data = Slnky::Data.new
         opts.each do |key, value|
