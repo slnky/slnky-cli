@@ -11,7 +11,7 @@ module Slnky
         @trace = []
       end
 
-      [:info, :warn, :error].each do |l|
+      [:debug, :info, :warn, :error].each do |l|
         define_method(l) do |message|
           start! unless @started
           log.local.send(l, "RESPONSE: #{@route}: #{message}")

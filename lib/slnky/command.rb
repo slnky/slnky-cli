@@ -55,8 +55,12 @@ module Slnky
         @name ||= self.class.name.split('::')[1].downcase
       end
 
+      def config
+        Slnky.config
+      end
+
       def log
-        @log ||= Slnky.log
+        Slnky.log
       end
 
       class << self

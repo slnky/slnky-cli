@@ -14,7 +14,6 @@ module Slnky
       attr_reader :channel
       attr_reader :exchanges
       attr_reader :queues
-      attr_reader :stopper
 
       def initialize
         @config = Slnky.config
