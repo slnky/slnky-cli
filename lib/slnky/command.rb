@@ -39,6 +39,7 @@ module Slnky
       end
 
       def handle_command(req, res)
+        puts "REQ ARGS: #{req.inspect}"
         begin
           processor = @commands.select { |c| c.name == req.command }.first
           if processor
