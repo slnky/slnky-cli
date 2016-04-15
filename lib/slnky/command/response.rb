@@ -42,9 +42,9 @@ module Slnky
       end
 
       def pub(level, message)
-        puts "RESPONSE: #{level} #{message}"
         exchange.publish(msg(level, message), routing_key: @route)
         @trace << message
+        puts "RESPONSE: #{level} #{message}"
       end
 
       def config
