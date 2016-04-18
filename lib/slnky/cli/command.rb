@@ -39,13 +39,16 @@ module Slnky
         tx.start!(self) do |_|
           tx.exchange('response', :direct)
           queue = tx.queue(response, 'response', durable: false, auto_delete: true, routing_key: response)
+          # queue = tx.queue(response, 'response', durable: true, routing_key: response)
           queue.subscribe do |raw|
             message = Slnky::Message.parse(raw)
             level = message.level.to_sym
             if level == :complete
+              puts "complete"
               tx.stop!
             elsif level == :start
               # start tracking responders?
+              puts "start"
             else
               out message.level, message.message, message.service
             end

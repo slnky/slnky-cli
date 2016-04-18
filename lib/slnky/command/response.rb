@@ -8,10 +8,12 @@ module Slnky
         @route = route
         @service = Slnky::System.pid
         @started = false
-        @log = []
+        @exchange = nil
+        @transport = nil
+        @trace = []
       end
 
-      [:info, :warn, :error].each do |l|
+      [:debug, :info, :warn, :error].each do |l|
         define_method(l) do |message|
           start! unless @started
           pub l, message
@@ -42,9 +44,19 @@ module Slnky
       end
 
       def pub(level, message)
-        # puts "#{level} #{message}"
-        exchange.publish(msg(level, message), routing_key: @route)
-        @log << message
+        # puts "not connected?" unless transport.connected? && exchange
+        transport.exchange('response', :direct)
+        transport.exchanges['response'].publish(msg(level, message), routing_key: @route)
+        @trace << message
+        puts "RESPONSE: #{transport.connected?} #{@route.inspect} #{level} #{message}"
+      end
+
+      def config
+        Slnky.config
+      end
+
+      def log
+        Slnky.log
       end
 
       def exchange
@@ -53,10 +65,6 @@ module Slnky
 
       def transport
         @transport ||= Slnky::Transport.instance
-      end
-
-      def channel
-        @channel ||= transport.channel
       end
     end
   end

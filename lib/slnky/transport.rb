@@ -72,10 +72,14 @@ module Slnky
         @connection.close { EventMachine.stop { exit } }
       end
 
+      def connected?
+        @channel != nil
+      end
+
       def exchange(desc, type)
         raise 'attempting to create exchange without channel' unless @channel
         name = "slnky.#{desc}"
-        @exchanges[desc] ||=
+        @exchanges[desc] =
             case type
               when :fanout
                 @channel.fanout(name)
@@ -92,8 +96,10 @@ module Slnky
         options = {
             durable: true
         }.merge(options)
+        puts "options: #{options.inspect}"
         routing = options.delete(:routing_key)
         bindoptions = routing ? {routing_key: routing} : {}
+        puts "queue: #{desc}: queue(#{name}, #{options.inspect}).bind(#{exchange}, #{bindoptions.inspect})"
         @queues[desc] ||= @channel.queue(name, options).bind(@exchanges[exchange], bindoptions)
       end
     end
