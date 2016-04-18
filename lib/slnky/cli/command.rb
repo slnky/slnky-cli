@@ -48,12 +48,12 @@ module Slnky
             elsif level == :start
               # start tracking responders?
             else
-              Slnky.log.send(level, "#{message.service}: #{message.message}")
+              out level, message.message, message.service
             end
           end
 
           EventMachine.add_periodic_timer(timeout) do
-            Slnky.log.error "timed out after #{timeout} seconds"
+            out :error, "timed out after #{timeout} seconds"
             tx.stop!('Timed out')
           end
 
