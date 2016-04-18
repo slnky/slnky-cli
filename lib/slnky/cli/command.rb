@@ -44,18 +44,16 @@ module Slnky
             message = Slnky::Message.parse(raw)
             level = message.level.to_sym
             if level == :complete
-              puts "complete"
               tx.stop!
             elsif level == :start
               # start tracking responders?
-              puts "start"
             else
-              out message.level, message.message, message.service
+              Slnky.log.send(level, "#{message.service}: #{message.message}")
             end
           end
 
           EventMachine.add_periodic_timer(timeout) do
-            out :error, "timed out after #{timeout} seconds"
+            Slnky.log.error "timed out after #{timeout} seconds"
             tx.stop!('Timed out')
           end
 

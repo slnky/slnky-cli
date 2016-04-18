@@ -26,7 +26,6 @@ module Slnky
         server = ENV['SLNKY_URL']||config['url']
         config.merge!(config_server(server))
         @config = self.new(config)
-        puts "configure: #{name}: #{@config.inspect}"
       end
 
       # def load_file(file)

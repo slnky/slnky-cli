@@ -14,7 +14,6 @@ module Slnky
       attr_reader :channel
       attr_reader :exchanges
       attr_reader :queues
-      attr_reader :stopper
 
       def initialize
         @config = Slnky.config
@@ -96,10 +95,8 @@ module Slnky
         options = {
             durable: true
         }.merge(options)
-        puts "options: #{options.inspect}"
         routing = options.delete(:routing_key)
         bindoptions = routing ? {routing_key: routing} : {}
-        puts "queue: #{desc}: queue(#{name}, #{options.inspect}).bind(#{exchange}, #{bindoptions.inspect})"
         @queues[desc] ||= @channel.queue(name, options).bind(@exchanges[exchange], bindoptions)
       end
     end
