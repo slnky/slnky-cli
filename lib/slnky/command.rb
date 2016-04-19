@@ -24,10 +24,11 @@ module Slnky
           end
 
         rescue => e
+          puts "ERROR: #{e.message}"
           log.error "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"
         ensure
-          res.done!
           log.response = false
+          res.done!
         end
       end
 
@@ -38,6 +39,7 @@ module Slnky
       end
 
       def handle_command(req, res)
+        puts "REQ ARGS: #{req.inspect}"
         begin
           processor = @commands.select { |c| c.name == req.command }.first
           puts "REQ: #{req.inspect}"
@@ -56,8 +58,12 @@ module Slnky
         @name ||= self.class.name.split('::')[1].downcase
       end
 
+      def config
+        Slnky.config
+      end
+
       def log
-        @log ||= Slnky.log
+        Slnky.log
       end
 
       class << self

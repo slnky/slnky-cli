@@ -6,12 +6,12 @@ module Slnky
         @client ||= Slnky::<%= cap %>::Client.new(config)
       end
 
-      subscribe 'slnky.service.test', :handler
+      subscribe 'slnky.service.test', :handle_test
       # you can also subscribe to heirarchies, this gets
       # all events under something.happened
       # subscribe 'something.happened.*', :other_handler
 
-      def handler(name, data)
+      def handle_test(name, data)
         name == 'slnky.service.test' && data.hello == 'world!'
       end
     end

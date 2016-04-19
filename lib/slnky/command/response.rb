@@ -1,7 +1,7 @@
 module Slnky
   module Command
     class Response
-      attr_reader :log
+      attr_reader :trace
 
       def initialize(route, service)
         Slnky.config.service = service

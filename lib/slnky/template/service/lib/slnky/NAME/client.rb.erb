@@ -1,11 +1,12 @@
 module Slnky
   module <%= cap %>
-    class Client
-      def initialize(config)
-
+    class Client < Slnky::Client::Base
+      def initialize
+        # you can load any configurations from the server here
+        # @param = config.<%= name %>.param
       end
 
-
+      # implement communications with supporting services
     end
   end
 end
