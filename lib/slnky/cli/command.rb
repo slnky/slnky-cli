@@ -65,7 +65,7 @@ module Slnky
           end
 
           EventMachine.add_timer(1) do
-            puts "sendinng request:".colorize(:light_white)
+            puts "sending request:".colorize(:light_white)
             Slnky.notify(msg)
           end
         end
@@ -74,13 +74,8 @@ module Slnky
         # Slnky.notify(msg)
       end
 
-      def out(level, message, service=:local)
-        # unless @remote[service]
-        #   say "<%= color('response from service: #{data.service}', BOLD) %>"
-        #   @first = true
-        # end
-        # color = level.to_s == 'info' ? 'GREEN' : 'RED'
-        # say "<%= color(\"#{service}\", GRAY) %> <%= color(\"#{message}\", #{color}) %>"
+      def out(level, message, service=nil)
+        service ||= Slnky::System.pid('local')
         lines = message.split("\n")
         lines.each do |line|
           str = service.colorize(:light_black)
