@@ -42,7 +42,6 @@ module Slnky
           exchange('events', :fanout)
           exchange('logs', :fanout)
           exchange('response', :direct)
-          queue(service.name, 'events')
 
           yield self if block_given?
 

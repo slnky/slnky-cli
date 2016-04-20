@@ -37,7 +37,6 @@ module Slnky
         tx = Slnky::Transport.instance
 
         tx.start!(self) do |_|
-          tx.exchange('response', :direct)
           queue = tx.queue(response, 'response', durable: false, auto_delete: true, routing_key: response)
           # queue = tx.queue(response, 'response', durable: true, routing_key: response)
           queue.subscribe do |raw|
