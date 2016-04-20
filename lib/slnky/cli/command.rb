@@ -1,3 +1,5 @@
+require 'colorize'
+
 module Slnky
   module CLI
     class Command < Base
@@ -6,8 +8,15 @@ module Slnky
       option %w{-t --timeout}, '[TIMEOUT]', "time to wait for response in seconds", default: 10 do |t|
         Integer(t)
       end
-      parameter 'SERVICE', 'the name of the service'
-      parameter '[COMMAND]', 'the name of the command', default: 'help'
+      option %w{--[no-]color}, :flag, "disable color output", default: false do |c|
+        String.disable_colorization = !c
+      end
+      parameter '[SERVICE]', 'the name of the service', default: 'help' do |h|
+        h == '-h' && 'help' || h
+      end
+      parameter '[COMMAND]', 'the name of the command', default: 'help' do |h|
+        h == '-h' && 'help' || h
+      end
       parameter '[ARGUMENTS] ...', <<-DESC.strip_heredoc, attribute_name: :args
         arguments to the command
         commands support options and command line arguments similarly to
@@ -38,7 +47,6 @@ module Slnky
 
         tx.start!(self) do |_|
           queue = tx.queue(response, 'response', durable: false, auto_delete: true, routing_key: response)
-          # queue = tx.queue(response, 'response', durable: true, routing_key: response)
           queue.subscribe do |raw|
             message = Slnky::Message.parse(raw)
             level = message.level.to_sym
@@ -56,8 +64,14 @@ module Slnky
             tx.stop!('Timed out')
           end
 
-          Slnky.notify(msg)
+          EventMachine.add_timer(1) do
+            puts "sendinng request:".colorize(:light_white)
+            Slnky.notify(msg)
+          end
         end
+
+        # sleep 10
+        # Slnky.notify(msg)
       end
 
       def out(level, message, service=:local)
@@ -69,7 +83,18 @@ module Slnky
         # say "<%= color(\"#{service}\", GRAY) %> <%= color(\"#{message}\", #{color}) %>"
         lines = message.split("\n")
         lines.each do |line|
-          puts "#{service} [#{level}] #{line}"
+          str = service.colorize(:light_black)
+          color = case level
+                    when :warn
+                      :yellow
+                    when :error
+                      :red
+                    else
+                      :white
+          end
+          str << (" [ %5s ] %s" % [level.to_s.upcase, line]).colorize(color)
+          # puts "#{service} [#{level}] #{line}"
+          puts str
         end
       end
     end
