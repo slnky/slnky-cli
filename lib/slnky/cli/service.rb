@@ -6,6 +6,7 @@ module Slnky
           n.gsub(/^slnky-/, '')
         end
         # option %w{-f --force}, :flag, "force overwrite of files"
+        option %w{-t --trace}, :flag, "print full backtrace on error"
         def execute
           lib = File.expand_path("#{Dir.pwd}/lib", __FILE__)
           $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
@@ -20,9 +21,16 @@ module Slnky
 
           Slnky::Config.reset!
           Slnky::Config.configure(name, 'environment' => environment)
-          Slnky::Chef::Service.new.start
+
+          klass = "Slnky::#{name.capitalize}::Service".constantize
+          klass.new.start
         rescue => e
           puts "failed to run service #{name}: #{e.message} at #{e.backtrace.first}"
+          if trace?
+            e.backtrace.each do |b|
+              puts "  #{b}"
+            end
+          end
         end
       end
     end

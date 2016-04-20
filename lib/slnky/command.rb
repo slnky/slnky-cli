@@ -13,7 +13,7 @@ module Slnky
       def handle(event, data, response=nil)
         begin
           req = Slnky::Command::Request.new(data)
-          res = Slnky::Command::Response.new(data.response, name)
+          res = response || Slnky::Command::Response.new(data.response, name)
           log.response = res
           res.start!
 
@@ -39,10 +39,8 @@ module Slnky
       end
 
       def handle_command(req, res)
-        puts "REQ ARGS: #{req.inspect}"
         begin
           processor = @commands.select { |c| c.name == req.command }.first
-          puts "REQ: #{req.inspect}"
           if processor
             options = processor.process(req.args)
             self.send("handle_#{processor.name}", req, res, options)

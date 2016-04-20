@@ -13,7 +13,7 @@ module Slnky
     class Rabbit
       attr_reader :channel
       attr_reader :exchanges
-      attr_reader :queues
+      # attr_reader :queues
 
       def initialize
         @config = Slnky.config
@@ -47,12 +47,10 @@ module Slnky
           yield self if block_given?
 
           if service.is_a?(Slnky::Service::Base)
-            queues.each do |name, queue|
-              queue.subscribe do |raw|
-                event = Slnky::Message.parse(raw)
-                service.subscriber.for(event.name) do |name, method|
-                  service.send(method.to_sym, event.name, event.payload)
-                end
+            queue(service.name, 'events').subscribe do |raw|
+              event = Slnky::Message.parse(raw)
+              service.subscriber.for(event.name) do |name, method|
+                service.send(method.to_sym, event.name, event.payload)
               end
             end
 
@@ -89,15 +87,17 @@ module Slnky
             end
       end
 
-      def queue(desc, exchange, options={})
+      def queue(desc, exchange='events', options={})
         raise 'attempting to create queue without channel' unless @channel
         name = "service.#{desc}.#{exchange}"
-        options = {
-            durable: true
-        }.merge(options)
-        routing = options.delete(:routing_key)
-        bindoptions = routing ? {routing_key: routing} : {}
-        @queues[desc] ||= @channel.queue(name, options).bind(@exchanges[exchange], bindoptions)
+        @queues[name] ||= begin
+          options = {
+              durable: true
+          }.merge(options)
+          routing = options.delete(:routing_key)
+          bindoptions = routing ? {routing_key: routing} : {}
+          @channel.queue(name, options).bind(@exchanges[exchange], bindoptions)
+        end
       end
     end
 

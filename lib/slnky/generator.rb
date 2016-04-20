@@ -26,8 +26,6 @@ module Slnky
         # puts "  from: #{@template}"
         # puts "  to:   #{@dir}"
         process_files
-        # make service executable
-        `chmod 755 #{@dir}/service-slnky-#{@name}`
         # git init
         if File.directory?("#{@dir}/.git")
           puts "git already initialized"

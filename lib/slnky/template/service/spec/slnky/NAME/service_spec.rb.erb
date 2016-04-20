@@ -6,7 +6,7 @@ describe Slnky::<%= cap %>::Service do
     s.client = Slnky::<%= cap %>::Mock.new
     s
   end
-  let(:test_event) { event_load('test')}
+  let(:test_event) { slnky_event('test')}
 
   it 'handles event' do
     # test that the handler method receives and responds correctly

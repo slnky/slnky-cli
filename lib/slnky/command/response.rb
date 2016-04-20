@@ -45,10 +45,8 @@ module Slnky
 
       def pub(level, message)
         # puts "not connected?" unless transport.connected? && exchange
-        transport.exchange('response', :direct)
-        transport.exchanges['response'].publish(msg(level, message), routing_key: @route)
+        exchange.publish(msg(level, message), routing_key: @route)
         @trace << message
-        puts "RESPONSE: #{transport.connected?} #{@route.inspect} #{level} #{message}"
       end
 
       def config
