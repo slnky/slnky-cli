@@ -17,25 +17,25 @@ module Slnky
         attributes, they will be moved to their own keyspace
       DESC
       def execute
+        Slnky::Config.configure('cli')
         attributes = {}
-        if file
-          begin
-            yaml = YAML.load_file(file)
-            attributes.merge!(yaml)
-          rescue => e
-            puts "ERROR: reading file #{file}"
-            exit(1)
-          end
-        end
+        attributes.merge!(yaml_file(file)) if file
         attributes.merge!(dothash(kvs)) if kvs
         chat = attributes.delete(:chat)
         msg = Slnky::Message.new({name: name, attributes: attributes, chat: chat})
-        cfg = Slnky.config
-        srv = server || cfg['slnky']['url']
 
         puts 'sending message:'
-        puts JSON.pretty_generate(msg.to_h)
-        Slnky.notify(msg, srv) unless dry_run?
+        puts JSON.pretty_generate(msg.to_h) if dry_run?
+        Slnky.notify(msg) unless dry_run?
+      end
+
+      def yaml_file(file)
+        begin
+          YAML.load_file(file)
+        rescue => e
+          puts "ERROR: reading file #{file}"
+          exit(1)
+        end
       end
 
       # convert list of dot notation key.name=value into nested hash
