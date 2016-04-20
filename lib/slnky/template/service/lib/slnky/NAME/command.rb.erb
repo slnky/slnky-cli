@@ -3,7 +3,7 @@ module Slnky
     class Command < Slnky::Command::Base
       attr_writer :client
       def client
-        @client ||= Slnky::<%= cap %>::Client.new(config)
+        @client ||= Slnky::<%= cap %>::Client.new
       end
 
       # use docopt to define arguments and options

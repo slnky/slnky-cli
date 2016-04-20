@@ -3,7 +3,7 @@ module Slnky
     class Service < Slnky::Service::Base
       attr_writer :client
       def client
-        @client ||= Slnky::<%= cap %>::Client.new(config)
+        @client ||= Slnky::<%= cap %>::Client.new
       end
 
       subscribe 'slnky.service.test', :handle_test
