@@ -64,7 +64,7 @@ module Slnky
       def log
         Slnky.log
       end
-      
+
       def exchange
         @exchange ||= transport.exchanges['response']
       end
