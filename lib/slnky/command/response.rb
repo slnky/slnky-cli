@@ -5,7 +5,12 @@ module Slnky
 
       def initialize(route, service)
         Slnky.config.service = service
+        if route =~ /\:/
+          (route, reply) = route.split(':', 2)
+        end
+        puts "ROUTE: #{route} #{reply}"
         @route = route
+        @reply = reply
         @service = Slnky::System.pid
         @started = false
         @exchange = nil
@@ -40,12 +45,15 @@ module Slnky
       private
 
       def msg(level, message)
-        Slnky::Message.new({level: level, message: message, service: @service})
+        Slnky::Message.new({level: level, message: message, service: @service, reply: @reply})
       end
 
       def pub(level, message)
-        # puts "not connected?" unless transport.connected? && exchange
-        exchange.publish(msg(level, message), routing_key: @route)
+        # if @route.to_s =~ /^hipchat/
+        #   chat(level, message)
+        # else
+          exchange.publish(msg(level, message), routing_key: @route)
+        # end
         @trace << message
       end
 
@@ -56,7 +64,7 @@ module Slnky
       def log
         Slnky.log
       end
-
+      
       def exchange
         @exchange ||= transport.exchanges['response']
       end

@@ -28,7 +28,7 @@ module Slnky
           log.error "failed to run command: #{name}: #{data.command}: #{e.message} at #{e.backtrace.first}"
         ensure
           log.response = false
-          res.done!
+          res.done! if res
         end
       end
 
