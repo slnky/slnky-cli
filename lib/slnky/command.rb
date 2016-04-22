@@ -7,7 +7,7 @@ module Slnky
   module Command
     class Base
       def initialize
-        @commands = self.class.commands
+        @commands = self.class.commands||[]
       end
 
       def handle(event, data, response=nil)
