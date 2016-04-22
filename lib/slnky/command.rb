@@ -7,7 +7,7 @@ module Slnky
   module Command
     class Base
       def initialize
-        @commands = self.class.commands||[]
+        @commands = self.class.commands
       end
 
       def handle(event, data, response=nil)
@@ -33,8 +33,12 @@ module Slnky
       end
 
       def handle_help(req, res, opts={})
-        @commands.each do |command|
-          log.info "#{name} #{command.name}: #{command.banner}"
+        if @commands && @commands.count > 0
+          @commands.each do |command|
+            log.info "#{name} #{command.name}: #{command.banner}"
+          end
+        else
+          log.info "#{name} has no additional commands"
         end
       end
 
