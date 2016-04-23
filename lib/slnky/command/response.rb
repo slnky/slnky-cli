@@ -8,7 +8,6 @@ module Slnky
         if route =~ /\:/
           (route, reply) = route.split(':', 2)
         end
-        puts "ROUTE: #{route} #{reply}"
         @route = route
         @reply = reply
         @service = Slnky::System.pid
