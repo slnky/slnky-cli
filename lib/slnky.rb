@@ -9,6 +9,7 @@ require 'slnky/config'
 require 'slnky/log'
 require 'slnky/system'
 require 'slnky/message'
+require 'slnky/brain'
 require 'slnky/transport'
 require 'slnky/service'
 require 'slnky/client'
@@ -21,8 +22,9 @@ module Slnky
     end
 
     def heartbeat(name)
-      server = ENV['SLNKY_URL'] || Slnky.config.url
-      RestClient.post "#{server}/hooks/heartbeat", {name: name}, content_type: :json, accept: :json
+      # server = ENV['SLNKY_URL'] || Slnky.config.url
+      # RestClient.post "#{server}/hooks/heartbeat", {name: name}, content_type: :json, accept: :json
+      Slnky.brain.hset(:heartbeat, name, Time.now.to_i)
     end
 
     def notify(msg)

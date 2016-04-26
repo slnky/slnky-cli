@@ -24,7 +24,7 @@ module Slnky
           subscriber.add "slnky.#{name}.command", :handle_command
           subscriber.add "slnky.help.command", :handle_command
           subscriber.add "slnky.service.restart", :handle_restart
-          timers.add 5.seconds, :handle_heartbeat unless config.development?
+          timers.add 5.seconds, :handle_heartbeat # unless config.development?
 
           subscriber.each do |name, method|
             log.info "subscribed to: #{name} -> #{self.class.name}.#{method}"
@@ -47,11 +47,8 @@ module Slnky
       end
 
       def handle_heartbeat
-        return if @server_down
+        # log.debug "heartbeat #{name}"
         Slnky.heartbeat(name)
-      rescue => e
-        log.info "could not post heartbeat, server down? #{e.message}"
-        @server_down = true
       end
 
       def subscriber

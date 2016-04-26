@@ -9,10 +9,26 @@ describe Slnky::Command::Base do
   end
 
   describe Slnky::Command::Processor do
-    subject {described_class.new('test', 'testing', 'Usage: test [options] PARAM')}
+    subject {described_class.new('test', 'testing', <<-USAGE.strip_heredoc)}
+        Usage: test [options] PARAM
+
+        -h --help       print help
+        -v --verbose    make verbose
+        -n --name NAME  named NAME
+    USAGE
+    let(:options) { %w{-v --name myname myparam} }
+    it 'can process options' do
+      expect { subject.process(options) }.to_not raise_error
+      expect(subject.process(options)).to be_a(Slnky::Data)
+    end
+
     it 'can accept arguments' do
-      expect { subject.process(['blarg']) }.to_not raise_error
-      expect(subject.process(['blarg'])).to be_a(Slnky::Data)
+      expect(subject.process(options).param).to eq('myparam')
+    end
+
+    it 'can accept options' do
+      expect(subject.process(options).verbose).to eq(true)
+      expect(subject.process(options).name).to eq('myname')
     end
   end
 end
